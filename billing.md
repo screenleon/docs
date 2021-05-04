@@ -1376,7 +1376,7 @@ You may perform a checkout for an existing product that has been created within 
 
 If needed, you may also specify a product quantity:
 
-    $checkout = $user->checkout('price_12345', 15);
+    $checkout = $user->checkout(['price_12345' => 15]);
 
 Once you have passed the Checkout session instance to your view, a button that directs the user to Stripe Checkout may be rendered using the `button` method:
 
@@ -1384,7 +1384,7 @@ Once you have passed the Checkout session instance to your view, a button that d
 
 When a customer clicks this button they will be redirected to Stripe's Checkout page. By default, when a user successfully completes a purchase or cancels a purchase they will be redirected to your `home` route location, but you may specify custom callback URLs using the `success_url` and `cancel_url` options:
 
-    $checkout = $user->checkout('price_12345', 1, [
+    $checkout = $user->checkout(['price_12345' => 1], [
         'success_url' => route('your-success-route'),
         'cancel_url' => route('your-cancel-route'),
     ]);
@@ -1527,6 +1527,8 @@ If your business is based in Europe you will need to abide by the EU's Strong Cu
 ### Payments Requiring Additional Confirmation
 
 SCA regulations often require extra verification in order to confirm and process a payment. When this happens, Cashier will throw a `Laravel\Cashier\Exceptions\PaymentActionRequired` exception that informs you that extra verification is needed. More information on how to handle these exceptions be found can be found in the documentation on [handling failed payments](#handling-failed-payments).
+
+Payment confirmation screens presented by Stripe or Cashier may be tailored to a specific bank or card issuer's payment flow and can include additional card confirmation, a temporary small charge, separate device authentication, or other forms of verification.
 
 <a name="incomplete-and-past-due-state"></a>
 #### Incomplete and Past Due State

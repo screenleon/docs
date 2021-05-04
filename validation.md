@@ -25,6 +25,7 @@
 - [Available Validation Rules](#available-validation-rules)
 - [Conditionally Adding Rules](#conditionally-adding-rules)
 - [Validating Arrays](#validating-arrays)
+- [Validating Passwords](#validating-passwords)
 - [Custom Validation Rules](#custom-validation-rules)
     - [Using Rule Objects](#using-rule-objects)
     - [Using Closures](#using-closures)
@@ -346,6 +347,10 @@ Since all form requests extend the base Laravel request class, we may use the `u
 
     Route::post('/comment/{comment}');
 
+Therefore, if your application is taking advantage of [route model binding](/docs/{{version}}/routing#route-model-binding), your code may be made even more succinct by accessing the resolved model as a property of the request:
+
+    return $this->user()->can('update', $this->comment);
+
 If the `authorize` method returns `false`, an HTTP response with a 403 status code will automatically be returned and your controller method will not execute.
 
 If you plan to handle authorization logic for the request in another part of your application, you may simply return `true` from the `authorize` method:
@@ -524,7 +529,7 @@ Sometimes you may wish to specify a custom error message only for a specific att
 <a name="specifying-custom-attribute-values"></a>
 #### Specifying Custom Attribute Values
 
-Many of Laravel's built-in error messages include an `:attribute:` placeholder that is replaced with the name of the field or attribute under validation. To customize the values used to replace these placeholders for specific fields, you may pass an array of custom attributes as the fourth argument to the `Validator::make` method:
+Many of Laravel's built-in error messages include an `:attribute` placeholder that is replaced with the name of the field or attribute under validation. To customize the values used to replace these placeholders for specific fields, you may pass an array of custom attributes as the fourth argument to the `Validator::make` method:
 
     $validator = Validator::make($input, $rules, $messages, [
         'email' => 'email address',
@@ -618,7 +623,7 @@ You may customize the error messages used for specified attribute and rule combi
 <a name="specifying-attribute-in-language-files"></a>
 ### Specifying Attributes In Language Files
 
-Many of Laravel's built-in error messages include an `:attribute:` placeholder that is replaced with the name of the field or attribute under validation. If you would like the `:attribute` portion of your validation message to be replaced with a custom value, you may specify the custom attribute name in the `attributes` array of your `resources/lang/xx/validation.php` language file:
+Many of Laravel's built-in error messages include an `:attribute` placeholder that is replaced with the name of the field or attribute under validation. If you would like the `:attribute` portion of your validation message to be replaced with a custom value, you may specify the custom attribute name in the `attributes` array of your `resources/lang/xx/validation.php` language file:
 
     'attributes' => [
         'email' => 'email address',
@@ -1411,6 +1416,55 @@ Likewise, you may use the `*` character when specifying [custom validation messa
             'unique' => 'Each person must have a unique email address',
         ]
     ],
+
+<a name="validating-passwords"></a>
+## Validating Passwords
+
+To ensure that passwords have an adequate level of complexity, you may use Laravel's `Password` rule object:
+
+    use Illuminate\Support\Facades\Validator;
+    use Illuminate\Validation\Rules\Password;
+
+    $validator = Validator::make($request->all(), [
+        'password' => ['required', 'confirmed', Password::min(8)],
+    ]);
+
+The `Password` rule object allows you to easily customize the password complexity requirements for your application, such as specifying that passwords require at least one letter, number, symbol, or characters with mixed casing:
+
+    // Require at least 8 characters...
+    Password::min(8)
+
+    // Require at least one letter...
+    Password::min(8)->letters()
+
+    // Require at least one uppercase and one lowercase letter...
+    Password::min(8)->mixedCase()
+
+    // Require at least one number...
+    Password::min(8)->numbers()
+
+    // Require at least one symbol...
+    Password::min(8)->symbols()
+
+In addition, you may ensure that a password has not been compromised in a public password data breach leak using the `uncompromised` method:
+
+    Password::min(8)->uncompromised()
+
+Internally, the `Password` rule object uses the [k-Anonymity](https://en.wikipedia.org/wiki/K-anonymity) model to determine if a password has been leaked via the [haveibeenpwned.com](https://haveibeenpwned.com) service without sacrificing the user's privacy or security.
+
+By default, if a password appears at least once in a data leak, it will be considered compromised. You can customize this threshold using the first argument of the `uncompromised` method:
+
+    // Ensure the password appears less than 3 times in the same data leak...
+    Password::min(8)->uncompromised(3);
+
+Of course, you may chain all the methods in the examples above:
+
+    Password::min(8)
+        ->letters()
+        ->mixedCase()
+        ->numbers()
+        ->symbols()
+        ->uncompromised()
 
 <a name="custom-validation-rules"></a>
 ## Custom Validation Rules

@@ -1402,11 +1402,23 @@ Sometimes you might want to always load some relationships when retrieving a mod
         {
             return $this->belongsTo(Author::class);
         }
+
+        /**
+         * Get the genre of the book.
+         */
+        public function genre()
+        {
+            return $this->belongsTo(Genre::class);
+        }
     }
 
 If you would like to remove an item from the `$with` property for a single query, you may use the `without` method:
 
     $books = Book::without('author')->get();
+
+If you would like to override all items within the `$with` property for a single query, you may use the `withOnly` method:
+
+    $books = Book::withOnly('genre')->get();
 
 <a name="constraining-eager-loads"></a>
 ### Constraining Eager Loads
@@ -1533,7 +1545,7 @@ If you need to save multiple related models, you may use the `saveMany` method:
         new Comment(['message' => 'Another new comment.']),
     ]);
 
-The `save` and `saveMany` methods will not add the new models to any in-memory relationships that are already loaded onto the parent model. If you plan on accessing the relationship after using the `save` or `saveMany` methods, you may wish to use the `refresh` method to reload the model and its relationships:
+The `save` and `saveMany` methods will persist the given model instances, but will not add the newly persisted models to any in-memory relationships that are already loaded onto the parent model. If you plan on accessing the relationship after using the `save` or `saveMany` methods, you may wish to use the `refresh` method to reload the model and its relationships:
 
     $post->comments()->save($comment);
 
@@ -1576,7 +1588,7 @@ You may use the `createMany` method to create multiple related models:
         ['message' => 'Another new comment.'],
     ]);
 
-You may also use the `findOrNew`, `firstOrNew`, `firstOrCreate`, and `updateOrCreate` methods to [create and update models on relationships](https://laravel.com/docs/{{version}}/eloquent#upserts).
+You may also use the `findOrNew`, `firstOrNew`, `firstOrCreate`, and `updateOrCreate` methods to [create and update models on relationships](/docs/{{version}}/eloquent#upserts).
 
 > {tip} Before using the `create` method, be sure to review the [mass assignment](/docs/{{version}}/eloquent#mass-assignment) documentation.
 
